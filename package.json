@@ -19,7 +19,6 @@
   },
   "homepage": "https://github.com/andreevWork/serials#readme",
   "dependencies": {
-    "binary-search": "^1.3.2",
     "keycode": "^2.1.9",
     "plyr": "^2.0.13",
     "webpack": "^3.5.5"
