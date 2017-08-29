@@ -12,7 +12,7 @@ export class Subtitles {
       });
   }
 
-  getByTime(time) {
+  getIndexByTime(time) {
     const index = binarySearch(this.subtitles, time, (sub, time) => {
       return time < sub.startTime ?
         1
@@ -23,7 +23,7 @@ export class Subtitles {
           0;
     }, true);
 
-    return index >= 0 ? [index, this.subtitles[index]] : [];
+    return index >= 0 ? index : void 0;
   }
 
   getByIndex(index) {

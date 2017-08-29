@@ -19,6 +19,10 @@
   },
   "homepage": "https://github.com/andreevWork/serials#readme",
   "dependencies": {
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "dragula": "^3.7.2",
     "keycode": "^2.1.9",
     "plyr": "^2.0.13",
     "webpack": "^3.5.5"

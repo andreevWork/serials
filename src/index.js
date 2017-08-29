@@ -1,7 +1,8 @@
 
-import {Subtitles} from "./subtitles/index";
-import {Player} from "./player/index";
-import {Main} from "./main/index";
+import {Subtitles} from "./subtitles";
+import {Player} from "./player";
+import {Core} from "./core";
+import {Features} from "./features";
 
 document.addEventListener("DOMContentLoaded", async function() {
   const [player, subtitles] = await Promise.all([
@@ -9,9 +10,25 @@ document.addEventListener("DOMContentLoaded", async function() {
     new Subtitles('/subs.srt'),
   ]);
 
-  new Main(player, subtitles);
+  const main = new Core(player, subtitles);
+  const features = new Features('feature');
+
+  main.startuem();
+  features.startuem();
 });
 
+//
+// checkFeatures(keyCode) {
+//   const featureInstance = this.keyCodeFeatures[keyCode];
+//
+//   if (featureInstance) {
+//     const subtitle = this.getLastSubtitle();
+//     featureInstance.start(subtitle);
+//     featureInstance.onComplete(() => {
+//       this.repeatHandler(this.lastSubtitleIndex, this.getLastSubtitle(), true);
+//     });
+//   }
+// }
 
 //
 //
