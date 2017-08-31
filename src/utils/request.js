@@ -1,5 +1,5 @@
 
 export async function getRequest(url) {
-  return fetch('/subs.srt')
+  return fetch(url)
     .then(e => e.text());
 }

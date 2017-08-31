@@ -1,51 +1,74 @@
-import * as keycode from "keycode";
+// @flow
 
-export class Core {
+import * as keycode from "keycode";
+import type {ISubtitles, Subtitle} from "../subtitles/index";
+import type {IPlayer} from "../player/index";
+import type {Feature} from "../features/types";
+
+export interface ICore {
+  startuem(): void;
+  findSubtitleIndex(): number;
+  getCurrentSubtitle(): Subtitle;
+  playSubtitle(): void;
+  pauseAfterSubtitle(): void;
+}
+
+type FeatureClass = Class<Feature<any>>;
+
+type FeatureDict = {
+  [keyCode: number]: FeatureClass;
+}
+
+export class Core implements ICore {
 
   static timeDiff = 150;
 
-  static keyCodeHandlers = {};
+  static keyCodeHandlers: FeatureDict = {};
 
-  static addFeature(keyName, feature) {
+  static addFeature(keyName: string, feature: FeatureClass) {
     Core.keyCodeHandlers[keycode(keyName)] = feature;
   }
 
-  currentSubtitleIndex;
-  lastSubtitleIndex;
+  playerInstance: IPlayer;
+  subtitlesInstance: ISubtitles;
 
-  lastPauseTime;
-  pauseTimerId;
+  currentSubtitleIndex: number;
+  lastSubtitleIndex: number;
+
+  lastPauseTime: number;
+  pauseTimerId: number;
 
   constructor(
-    player,
-    subtitles
+    playerInstance: IPlayer,
+    subtitlesInstance: ISubtitles
   ) {
-    this.playerInstance = player;
-    this.subtitlesInstance = subtitles;
+    this.playerInstance = playerInstance;
+    this.subtitlesInstance = subtitlesInstance;
   }
 
-  startuem() {
-    document.addEventListener('keyup', ({ keyCode }) => {
-      const feature = Core.keyCodeHandlers[keyCode];
+  startuem(): void {
+    document.addEventListener('keyup', ({ keyCode }: KeyboardEvent) => {
+      const Feature: FeatureClass = Core.keyCodeHandlers[keyCode];
 
-      if (feature) {
+      if (Feature) {
         const index = this.findSubtitleIndex();
 
-        if (isNaN(index)) {
+        if (index < 0) {
           return;
         }
 
         this.currentSubtitleIndex = index;
 
-        feature(this);
+        const feature = new Feature(this);
+        feature.startuem();
 
         this.lastSubtitleIndex = this.currentSubtitleIndex;
-        this.currentSubtitleIndex = null;
+        this.currentSubtitleIndex = -1;
       }
     });
   }
 
-  findSubtitleIndex() {
+  findSubtitleIndex(): number {
     const playerTime = this.playerInstance.getCurrentTime();
 
     if (playerTime === this.lastPauseTime) {
@@ -55,11 +78,11 @@ export class Core {
     }
   }
 
-  getCurrentSubtitle() {
-    return this.subtitlesInstance.getByIndex(this.currentSubtitleIndex);
+  getCurrentSubtitle(): Subtitle {
+    return this.subtitlesInstance.getSubtitleByIndex(this.currentSubtitleIndex);
   }
 
-  playSubtitle() {
+  playSubtitle(): void {
     let {startTime} = this.getCurrentSubtitle();
 
     startTime = startTime - Core.timeDiff;
@@ -71,7 +94,7 @@ export class Core {
     }
   }
 
-  pauseAfterSubtitle() {
+  pauseAfterSubtitle(): void {
     clearTimeout(this.pauseTimerId);
 
     const {startTime, endTime} = this.getCurrentSubtitle();

@@ -1,53 +1,44 @@
+// @flow
 import * as Plyr from "plyr";
 
-export class Player {
+export interface IPlayer {
+  setup(playedId: string): Promise<void>;
+  seek(ms: number): void;
+  isPaused(): boolean;
+  play(): void;
+  pause(): void;
+  getCurrentTime(): number;
+}
 
-  player;
-  playerTag;
+export class Player implements IPlayer {
 
-  timeHandlers = [];
+  player: any;
 
-  constructor(playedId) {
+  setup(playedId: string): Promise<void> {
     this.player = Plyr.setup(document.getElementById(playedId))[0];
-    this.playerTag = this.player.getMedia();
 
     return new Promise(res => {
-      this.player.on('ready', () => {
-        res(this);
-      });
+      this.player.on('ready', res);
     })
   }
 
-  seek(ms) {
+  seek(ms: number): void {
     this.player.seek( parseInt( ms / 1000 ) );
   }
 
-  isPaused() {
+  isPaused(): boolean {
     return this.player.isPaused();
   }
 
-  play() {
+  play(): void {
     this.player.play();
   }
 
-  pause() {
+  pause(): void {
     this.player.pause();
   }
 
-  getCurrentTime() {
+  getCurrentTime(): number {
     return parseInt( this.player.getCurrentTime() * 1000 );
-  }
-
-  onTimeChange(cb) {
-    const fn = () => {
-      cb(this.getCurrentTime());
-    };
-    this.timeHandlers.push(fn);
-    this.playerTag.addEventListener('timeupdate', fn);
-  }
-
-  offTimeChange() {
-    this.timeHandlers.forEach(fn => this.playerTag.removeEventListener('timeupdate', fn));
-    this.timeHandlers.length = 0;
   }
 }

@@ -1,19 +1,34 @@
+// @flow
+
 import {getRequest} from "../utils/request";
 import {binarySearch} from "../utils/binarySearch";
 
-export class Subtitles {
-  constructor(fileName) {
+export type Subtitle = {
+  startTime: number;
+  endTime: number;
+  text: string;
+}
+
+export interface ISubtitles {
+  loadSubtitles(fileName: string): Promise<void>;
+  getIndexByTime(time: number): number;
+  getSubtitleByIndex(index: number): Subtitle;
+}
+
+export class Subtitles implements ISubtitles {
+
+  subtitles: Array<Subtitle>;
+
+  loadSubtitles(fileName: string): Promise<void> {
     return getRequest(fileName)
       .then(subtitlesParser)
       .then(subtitles => {
         this.subtitles = subtitles;
-
-        return this;
       });
   }
 
-  getIndexByTime(time) {
-    const index = binarySearch(this.subtitles, time, (sub, time) => {
+  getIndexByTime(time: number): number {
+    return binarySearch(this.subtitles, time, (sub, time) => {
       return time < sub.startTime ?
         1
         :
@@ -22,11 +37,9 @@ export class Subtitles {
           :
           0;
     }, true);
-
-    return index >= 0 ? index : void 0;
   }
 
-  getByIndex(index) {
+  getSubtitleByIndex(index: number): Subtitle {
     return this.subtitles[index];
   }
 }
@@ -43,7 +56,6 @@ function subtitlesParser(data) {
   const items = [];
   for (let i = 0; i < data.length; i += 4) {
     items.push({
-      id: data[i].trim(),
       startTime: useMs ? timeMs(data[i + 1].trim()) : data[i + 1].trim(),
       endTime: useMs ? timeMs(data[i + 2].trim()) : data[i + 2].trim(),
       text: data[i + 3].trim()

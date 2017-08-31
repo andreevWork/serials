@@ -1,22 +1,24 @@
+// @flow
 
 import {Subtitles} from "./subtitles";
 import {Player} from "./player";
 import {Core} from "./core";
-import {Features} from "./features";
-import {DragWordsFeature} from "./features/dragWords";
-import {repeatSubtitle} from "./features/repeatSubtitle";
-import {rewindSubtitle} from "./features/rewindSubtitle";
+import {RepeatSubtitle} from "./features/repeatSubtitle";
+import type {ISubtitles} from "./subtitles/index";
+import type {IPlayer} from "./player/index";
 
 document.addEventListener("DOMContentLoaded", async function() {
-  const [player, subtitles] = await Promise.all([
-    new Player('player'),
-    new Subtitles('/subs.srt'),
+  const playerInstance: IPlayer = new Player();
+  const subtitlesInstance: ISubtitles = new Subtitles();
+
+  await Promise.all([
+    playerInstance.setup('player'),
+    subtitlesInstance.loadSubtitles('/subs.srt'),
   ]);
 
-  const core = new Core(player, subtitles);
+  const core = new Core(playerInstance, subtitlesInstance);
 
-  Core.addFeature('r', repeatSubtitle);
-  Core.addFeature('b', rewindSubtitle);
+  Core.addFeature('r', RepeatSubtitle);
 
   core.startuem();
 });
