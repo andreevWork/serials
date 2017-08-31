@@ -10,9 +10,25 @@
   <style>
     #feature {
       margin: 10px;
-      border: 1px solid;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       height: 100px;
       touch-action: none;
+    }
+    .word {
+      cursor: pointer;
+      margin: 0 6px;
+      font-size: 1.2em;
+      color: #f3f3f3;
+      background-color: rgba(0,0,0,0.7);
+      padding: 4px;
+      border-radius: 4px;
+      opacity: 1;
+      transition: opacity 1.5s;
+    }
+    .hide {
+      opacity: 0;
     }
   </style>
 </head>
@@ -20,9 +36,7 @@
 <video id="player" controls>
     <source src="rik_and_morty_1_1.mp4" type="video/mp4">
 </video>
-<div id="feature">
-
-</div>
+<div id="feature"></div>
 <script src="index.js"></script>
 </body>
 </html>

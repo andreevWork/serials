@@ -23,7 +23,7 @@ export class Player implements IPlayer {
   }
 
   seek(ms: number): void {
-    this.player.seek( parseInt( ms / 1000 ) );
+    this.player.seek( ms / 1000 );
   }
 
   isPaused(): boolean {
@@ -39,6 +39,6 @@ export class Player implements IPlayer {
   }
 
   getCurrentTime(): number {
-    return parseInt( this.player.getCurrentTime() * 1000 );
+    return Math.round( this.player.getCurrentTime() * 1000 );
   }
 }

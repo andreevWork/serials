@@ -3,7 +3,6 @@
 import * as keycode from "keycode";
 import type {ISubtitles, Subtitle} from "../subtitles/index";
 import type {IPlayer} from "../player/index";
-import type {Feature} from "../features/types";
 
 export interface ICore {
   startuem(): void;
@@ -13,19 +12,17 @@ export interface ICore {
   pauseAfterSubtitle(): void;
 }
 
-type FeatureClass = Class<Feature<any>>;
-
 type FeatureDict = {
-  [keyCode: number]: FeatureClass;
+  [keyCode: number]: Function;
 }
 
 export class Core implements ICore {
 
-  static timeDiff = 150;
+  static timeDiff = 111;
 
   static keyCodeHandlers: FeatureDict = {};
 
-  static addFeature(keyName: string, feature: FeatureClass) {
+  static addFeature(keyName: string, feature: Function) {
     Core.keyCodeHandlers[keycode(keyName)] = feature;
   }
 
@@ -38,6 +35,8 @@ export class Core implements ICore {
   lastPauseTime: number;
   pauseTimerId: number;
 
+  clearFeatureFn: Function;
+
   constructor(
     playerInstance: IPlayer,
     subtitlesInstance: ISubtitles
@@ -48,22 +47,31 @@ export class Core implements ICore {
 
   startuem(): void {
     document.addEventListener('keyup', ({ keyCode }: KeyboardEvent) => {
-      const Feature: FeatureClass = Core.keyCodeHandlers[keyCode];
+      const feature: Function = Core.keyCodeHandlers[keyCode];
 
-      if (Feature) {
+      if (feature) {
         const index = this.findSubtitleIndex();
 
         if (index < 0) {
           return;
         }
 
+        this.lastPauseTime = -1;
+
         this.currentSubtitleIndex = index;
 
-        const feature = new Feature(this);
-        feature.startuem();
+        if (!feature.isBase && this.clearFeatureFn) {
+          this.clearFeatureFn();
+        }
+
+        if (feature.isBase) {
+          feature(this)
+        } else {
+          this.clearFeatureFn = feature(this);
+        }
+
 
         this.lastSubtitleIndex = this.currentSubtitleIndex;
-        this.currentSubtitleIndex = -1;
       }
     });
   }
@@ -85,26 +93,30 @@ export class Core implements ICore {
   playSubtitle(): void {
     let {startTime} = this.getCurrentSubtitle();
 
-    startTime = startTime - Core.timeDiff;
-
-    this.playerInstance.seek(startTime);
+    this.playerInstance.seek(startTime - Core.timeDiff);
 
     if (this.playerInstance.isPaused()) {
       this.playerInstance.play();
     }
   }
 
-  pauseAfterSubtitle(): void {
+  pauseAfterSubtitle(time:? number): void {
     clearTimeout(this.pauseTimerId);
 
     const {startTime, endTime} = this.getCurrentSubtitle();
-    const pauseTimer = endTime - startTime + Core.timeDiff * 2;
+    const subtitleDiff = endTime - startTime;
+    const pauseTimer = time || subtitleDiff;
 
     this.pauseTimerId = setTimeout(() => {
       const playerTime = this.playerInstance.getCurrentTime();
-      const diff = Math.abs(playerTime - endTime);
+      const diff = playerTime - endTime;
 
-      if (diff <= Core.timeDiff * 6) {
+      if (diff < Core.timeDiff / 2 && Math.abs(diff) < subtitleDiff) {
+        this.pauseAfterSubtitle(Core.timeDiff);
+        return;
+      }
+
+      if (diff > Core.timeDiff / 2 && diff < Core.timeDiff * 4) {
         this.lastPauseTime = playerTime;
         this.playerInstance.pause();
       }
