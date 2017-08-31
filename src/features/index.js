@@ -3,14 +3,14 @@ import * as keycode from "keycode";
 export class Features {
 
   keyCodeFeatures = {};
-  startFuture;
 
-  constructor(elementId) {
+  constructor(coreInstance, elementId) {
+    this.coreInstance = coreInstance;
     this.featureContainer = document.getElementById(elementId);
   }
 
   addFeature(featureInstance) {
-    const keyCode = keycode(featureInstance.getKeyName());
+    const keyCode = keycode(featureInstance.keyName);
     this.keyCodeFeatures[keyCode] = featureInstance;
   }
 
@@ -19,12 +19,20 @@ export class Features {
       const feature = this.keyCodeFeatures[keyCode];
 
       if (feature) {
-        this.startFuture(feature)
+        const index = this.coreInstance.findSubtitleIndex();
+
+        if (isNaN(index)) {
+          return;
+        }
+
+        this.coreInstance.repeatHandler(true);
+
+        feature.startuem(this.featureContainer, this.coreInstance.getLastSubtitle().text);
+
+        feature.onComplete(() => {
+          this.coreInstance.repeatAndContinue();
+        });
       }
     });
-  }
-
-  onStartFeature(cb) {
-    this.startFuture = cb;
   }
 }

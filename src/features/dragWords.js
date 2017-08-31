@@ -1,12 +1,12 @@
 import * as Dragula from 'dragula';
 import {radomizeArray} from "../utils/radnomizeArray";
 
-export class ShowFeature {
-  static key = 's';
+export class DragWordsFeature {
+  keyName = 's';
 
-  startuem(subtitle) {
-    const el = document.getElementById('feature');
-    const words = subtitle.text.trim().split(/\s+/g);
+  startuem(el, subtitleText) {
+    const words = subtitleText.split(/\s+/g);
+    console.log(words);
     radomizeArray(words.slice()).forEach(word => {
       const div = document.createElement('span');
       div.textContent = word + ' ';
@@ -19,10 +19,14 @@ export class ShowFeature {
     });
 
     drake.on('drop', () => {
+      console.log('drop');
       const wordsEl = document.querySelectorAll('#feature span');
       if (Array.from(wordsEl).map(e => e.textContent.trim()).join() === words.join()) {
-        el.innerHTML = '';
-        this.completeHandler();
+        setTimeout(() => {
+          drake.destroy();
+          el.innerHTML = '';
+          this.completeHandler();
+        })
       }
     });
   }

@@ -2,15 +2,17 @@ import * as keycode from "keycode";
 
 export class Core {
 
-  static diff = 150;
+  static timeDiff = 150;
 
-  static keyCodeHandlers = {
-    [keycode('r')]: 'repeatHandler',
-    [keycode('b')]: 'backHandler'
-  };
+  static keyCodeHandlers = {};
 
-  repeatCount;
+  static addFeature(keyName, feature) {
+    Core.keyCodeHandlers[keycode(keyName)] = feature;
+  }
+
+  currentSubtitleIndex;
   lastSubtitleIndex;
+
   lastPauseTime;
   pauseTimerId;
 
@@ -24,16 +26,21 @@ export class Core {
 
   startuem() {
     document.addEventListener('keyup', ({ keyCode }) => {
-      const handlerName = Core.keyCodeHandlers[keyCode];
+      const feature = Core.keyCodeHandlers[keyCode];
 
-      if (handlerName) {
+      if (feature) {
         const index = this.findSubtitleIndex();
 
         if (isNaN(index)) {
           return;
         }
 
-        this[handlerName](index);
+        this.currentSubtitleIndex = index;
+
+        feature(this);
+
+        this.lastSubtitleIndex = this.currentSubtitleIndex;
+        this.currentSubtitleIndex = null;
       }
     });
   }
@@ -48,32 +55,14 @@ export class Core {
     }
   }
 
-  getLastSubtitle() {
-    return this.subtitlesInstance.getByIndex(this.lastSubtitleIndex);
+  getCurrentSubtitle() {
+    return this.subtitlesInstance.getByIndex(this.currentSubtitleIndex);
   }
 
-  backHandler(index) {
-    if (this.lastSubtitleIndex === index && index !== 0) {
-      index--;
-    }
+  playSubtitle() {
+    let {startTime} = this.getCurrentSubtitle();
 
-    this.repeatHandler(index);
-  }
-
-  repeatHandler(index) {
-    this.incrementRepeatCount(index);
-
-    this.lastSubtitleIndex = index;
-
-    if (this.isNeededPause()) {
-      this.startPauseTimer();
-    }
-    this.startPlay();
-  }
-
-  startPlay() {
-    let {startTime} = this.getLastSubtitle();
-    startTime = ( startTime - Core.diff ) / 1000;
+    startTime = startTime - Core.timeDiff;
 
     this.playerInstance.seek(startTime);
 
@@ -82,29 +71,17 @@ export class Core {
     }
   }
 
-  incrementRepeatCount(index) {
-    if (index === this.lastSubtitleIndex) {
-      this.repeatCount++;
-    } else {
-      this.repeatCount = 1;
-    }
-  }
-
-  isNeededPause() {
-    return this.repeatCount > 0;
-  }
-
-  startPauseTimer() {
+  pauseAfterSubtitle() {
     clearTimeout(this.pauseTimerId);
 
-    const {startTime, endTime} = this.getLastSubtitle();
-    const pauseTimer = endTime - startTime + Core.diff * 2;
+    const {startTime, endTime} = this.getCurrentSubtitle();
+    const pauseTimer = endTime - startTime + Core.timeDiff * 2;
 
     this.pauseTimerId = setTimeout(() => {
       const playerTime = this.playerInstance.getCurrentTime();
       const diff = Math.abs(playerTime - endTime);
 
-      if (diff < Core.diff * 4) {
+      if (diff <= Core.timeDiff * 6) {
         this.lastPauseTime = playerTime;
         this.playerInstance.pause();
       }

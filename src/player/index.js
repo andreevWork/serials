@@ -18,8 +18,8 @@ export class Player {
     })
   }
 
-  seek(newTime) {
-    this.player.seek(newTime);
+  seek(ms) {
+    this.player.seek( parseInt( ms / 1000 ) );
   }
 
   isPaused() {
@@ -35,7 +35,7 @@ export class Player {
   }
 
   getCurrentTime() {
-    return parseInt(this.player.getCurrentTime() * 1000);
+    return parseInt( this.player.getCurrentTime() * 1000 );
   }
 
   onTimeChange(cb) {

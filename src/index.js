@@ -3,6 +3,9 @@ import {Subtitles} from "./subtitles";
 import {Player} from "./player";
 import {Core} from "./core";
 import {Features} from "./features";
+import {DragWordsFeature} from "./features/dragWords";
+import {repeatSubtitle} from "./features/repeatSubtitle";
+import {rewindSubtitle} from "./features/rewindSubtitle";
 
 document.addEventListener("DOMContentLoaded", async function() {
   const [player, subtitles] = await Promise.all([
@@ -10,64 +13,44 @@ document.addEventListener("DOMContentLoaded", async function() {
     new Subtitles('/subs.srt'),
   ]);
 
-  const main = new Core(player, subtitles);
-  const features = new Features('feature');
+  const core = new Core(player, subtitles);
 
-  main.startuem();
-  features.startuem();
+  Core.addFeature('r', repeatSubtitle);
+  Core.addFeature('b', rewindSubtitle);
+
+  core.startuem();
 });
 
+
+// backHandler() {
+//   if (this.lastSubtitleIndex === this.currentSubtitleIndex && this.currentSubtitleIndex !== 0) {
+//     this.currentSubtitleIndex--;
+//   }
 //
-// checkFeatures(keyCode) {
-//   const featureInstance = this.keyCodeFeatures[keyCode];
+//   this.repeatHandler();
+// }
 //
-//   if (featureInstance) {
-//     const subtitle = this.getLastSubtitle();
-//     featureInstance.start(subtitle);
-//     featureInstance.onComplete(() => {
-//       this.repeatHandler(this.lastSubtitleIndex, this.getLastSubtitle(), true);
-//     });
+// repeatHandler(forcePause = false) {
+//   this.incrementRepeatCount();
+//
+//   if (forcePause || this.isNeededPause()) {
+//     this.startPauseTimer();
+//   }
+//   this.startPlay();
+// }
+//
+// repeatAndContinue() {
+//   this.startPlay();
+// }
+//
+// incrementRepeatCount() {
+//   if (this.currentSubtitleIndex === this.lastSubtitleIndex) {
+//     this.repeatCount++;
+//   } else {
+//     this.repeatCount = 1;
 //   }
 // }
-
 //
-//
-// fetch('/subs.srt')
-//   .then(e => e.text())
-//   .then(e => {
-//     const subsEl = document.getElementById('subs');
-//     const subs = Parser(e);
-//     const instnace = Plyr.setup()[0];
-//     let startTime;
-//     let endTime;
-//
-//     instnace.on('timeupdate', function (event) {
-//       const time = parseInt(event.detail.plyr.getCurrentTime() * 1000);
-//
-//       if (time < endTime && time > startTime) {
-//         return;
-//       }
-//
-//       const index = bs(subs, time, (sub, time) => {
-//         return time < sub.startTime ?
-//           1
-//           :
-//           time > sub.endTime ?
-//             -1
-//             :
-//             0;
-//       });
-//
-//       if (index >= 0) {
-//         console.log(subs[index]);
-//         endTime = subs[index].endTime;
-//         startTime = subs[index].startTime;
-//
-//         subsEl.textContent = subs[index].text;
-//       } else {
-//         subsEl.textContent = '';
-//       }
-//     });
-//
-
-//   });
+// isNeededPause() {
+//   return this.repeatCount > 0;
+// }
