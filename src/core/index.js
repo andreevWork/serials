@@ -9,22 +9,15 @@ export interface ICore {
   findSubtitleIndex(): number;
   getCurrentSubtitle(): Subtitle;
   playSubtitle(): void;
+  repeatSubtitle(): void;
   pauseAfterSubtitle(): void;
-}
-
-type FeatureDict = {
-  [keyCode: number]: Function;
 }
 
 export class Core implements ICore {
 
-  static timeDiff = 111;
+  static timeDiff = 100;
 
-  static keyCodeHandlers: FeatureDict = {};
-
-  static addFeature(keyName: string, feature: Function) {
-    Core.keyCodeHandlers[keycode(keyName)] = feature;
-  }
+  static repeatKeyCode = keycode('r');
 
   playerInstance: IPlayer;
   subtitlesInstance: ISubtitles;
@@ -34,8 +27,6 @@ export class Core implements ICore {
 
   lastPauseTime: number;
   pauseTimerId: number;
-
-  clearFeatureFn: Function;
 
   constructor(
     playerInstance: IPlayer,
@@ -47,9 +38,7 @@ export class Core implements ICore {
 
   startuem(): void {
     document.addEventListener('keyup', ({ keyCode }: KeyboardEvent) => {
-      const feature: Function = Core.keyCodeHandlers[keyCode];
-
-      if (feature) {
+      if (Core.repeatKeyCode === keyCode) {
         const index = this.findSubtitleIndex();
 
         if (index < 0) {
@@ -60,16 +49,7 @@ export class Core implements ICore {
 
         this.currentSubtitleIndex = index;
 
-        if (!feature.isBase && this.clearFeatureFn) {
-          this.clearFeatureFn();
-        }
-
-        if (feature.isBase) {
-          feature(this)
-        } else {
-          this.clearFeatureFn = feature(this);
-        }
-
+        this.repeatSubtitle();
 
         this.lastSubtitleIndex = this.currentSubtitleIndex;
       }
@@ -88,6 +68,11 @@ export class Core implements ICore {
 
   getCurrentSubtitle(): Subtitle {
     return this.subtitlesInstance.getSubtitleByIndex(this.currentSubtitleIndex);
+  }
+
+  repeatSubtitle(): void {
+    this.pauseAfterSubtitle();
+    this.playSubtitle();
   }
 
   playSubtitle(): void {
@@ -111,12 +96,12 @@ export class Core implements ICore {
       const playerTime = this.playerInstance.getCurrentTime();
       const diff = playerTime - endTime;
 
-      if (diff < Core.timeDiff / 2 && Math.abs(diff) < subtitleDiff) {
-        this.pauseAfterSubtitle(Core.timeDiff);
+      if (diff < Core.timeDiff && Math.abs(diff) < subtitleDiff) {
+        this.pauseAfterSubtitle(Core.timeDiff * 2);
         return;
       }
 
-      if (diff > Core.timeDiff / 2 && diff < Core.timeDiff * 4) {
+      if (diff > Core.timeDiff / 2 && diff < Core.timeDiff * 6) {
         this.lastPauseTime = playerTime;
         this.playerInstance.pause();
       }

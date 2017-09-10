@@ -19,9 +19,24 @@ module.exports = {
           use: {
             loader: 'babel-loader',
           }
+        },
+        {
+          test: /\.handlebars$/,
+          loader: "handlebars-loader"
+        },
+        {
+          test: /\.css$/,
+          use: ExtractTextPlugin.extract({
+            fallback: "style-loader",
+            use: "css-loader"
+          })
         }
       ]
     },
+
+    plugins: [
+      new ExtractTextPlugin("styles.css"),
+    ],
 
     devServer: {
         contentBase: dist,
