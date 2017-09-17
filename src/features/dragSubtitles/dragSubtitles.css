@@ -7,9 +7,19 @@
 .word {
   cursor: pointer;
   margin: 0 6px;
-  font-size: 1.2em;
+  font-size: 1.3em;
   color: #f3f3f3;
-  background-color: rgba(0,0,0,0.7);
-  padding: 4px;
+  background-color: rgba(0,0,0,0.8);
+  padding: 6px;
   border-radius: 4px;
+}
+
+.answer-button {
+  margin-top: 15px;
+}
+
+.answer {
+  margin-top: 15px;
+  font-size: 1.4em;
+  font-weight: bold;
 }

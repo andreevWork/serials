@@ -4,7 +4,10 @@ export function radomizeArray(array) {
     randomIndex;
 
   while (0 !== currentIndex) {
-    randomIndex = Math.floor(Math.random() * currentIndex);
+    do {
+      randomIndex = Math.floor(Math.random() * currentIndex);
+    } while(currentIndex !== 1 && randomIndex === currentIndex - 1);
+
     currentIndex -= 1;
 
     temporaryValue = array[currentIndex];

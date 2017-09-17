@@ -6,8 +6,13 @@ import './dragSubtitles.css';
 
 export class DragSubtitles  {
   container;
+  coreInstance;
+
   dragulaInstance;
+  destroyButtons;
   patternString;
+  answerString;
+  onComplete;
 
   constructor(coreInstance, container) {
     this.coreInstance = coreInstance;
@@ -15,45 +20,83 @@ export class DragSubtitles  {
   }
 
   startuem() {
+    this.renderWords();
+    this.initDrag();
+    this.initButtons();
+  }
+
+  initButtons() {
+    const showButton = document.querySelector('.js-show-answer');
+    const closeButton = document.querySelector('.js-close');
+    let fn1, fn2;
+
+    showButton.addEventListener('click', fn1 = () => {
+      const answerBlock = document.querySelector('.js-answer');
+      answerBlock.innerHTML = this.answerString;
+    });
+
+    closeButton.addEventListener('click', fn2 = () => {
+      this.destroy();
+    });
+
+    this.destroyButtons = () => {
+      showButton.removeEventListener('click', fn1);
+      closeButton.removeEventListener('click', fn2);
+    };
+  }
+
+  renderWords() {
     const {text} = this.coreInstance.getCurrentSubtitle();
     const words = text.split(/\s+/g);
+
     this.patternString = words.join('');
+    this.answerString = words.join(' ');
 
     this.container.innerHTML = blockTemplate({
       content: radomizeArray(words)
-        .map(word => wordTemplate({word}))
+        .map(word => wordTemplate({ word }))
         .join('')
     });
+  }
 
+  initDrag() {
     const wordsEl = document.querySelector('.js-words');
-    const wordsElChildNodes = wordsEl.childNodes;
 
     this.dragulaInstance = Dragula([wordsEl], {
       direction: 'horizontal'
     });
 
     this.dragulaInstance.on('drop', () => {
-      const wordsElArray = Array.from(wordsElChildNodes);
-      const resultWords = wordsElArray.map(e => e.textContent.trim()).join('');
-      console.log(resultWords);
-      console.log(this.patternString);
+      const resultWords = Array
+        .from(wordsEl.childNodes)
+        .map(it => it.textContent.trim())
+        .join('');
+
       if (resultWords === this.patternString) {
         setTimeout(() => {
+
           wordsEl.classList.add('hide');
-          setTimeout(() => {
-            this.destroy();
-          }, 1500);
-        })
+        });
+
+        setTimeout(() => {
+          this.destroy();
+        }, 1500);
       }
     });
   }
 
-  initDrag() {
+  destroy(force = false) {
+    this.destroyButtons();
+    this.dragulaInstance.destroy();
+    this.dragulaInstance = null;
+    this.container.innerHTML = '';
 
+    if (this.onComplete && !force) {
+      this.onComplete();
+    }
   }
 
-  destroy() {
-    this.dragulaInstance.destroy();
-    this.container.innerHTML = '';
+  onCompleteEvent(onComplete) {
+    this.onComplete = onComplete;
   }
 }
