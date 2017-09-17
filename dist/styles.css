@@ -1,9 +1,3 @@
-.words {
-  will-change: opacity;
-  transition: opacity 1.5s;
-  opacity: 1;
-}
-
 .word {
   cursor: pointer;
   margin: 0 6px;
@@ -12,4 +6,9 @@
   background-color: rgba(0,0,0,0.7);
   padding: 4px;
   border-radius: 4px;
+  opacity: 1;
+  transition: opacity 1.5s;
+}
+.hide {
+  opacity: 0;
 }

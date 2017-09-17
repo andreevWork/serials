@@ -15,7 +15,7 @@ export interface ICore {
 
 export class Core implements ICore {
 
-  static timeDiff = 100;
+  static timeDiff = 70;
 
   static repeatKeyCode = keycode('r');
 
@@ -96,14 +96,14 @@ export class Core implements ICore {
       const playerTime = this.playerInstance.getCurrentTime();
       const diff = playerTime - endTime;
 
-      if (diff < Core.timeDiff && Math.abs(diff) < subtitleDiff) {
-        this.pauseAfterSubtitle(Core.timeDiff * 2);
+      if (diff < Core.timeDiff / 2 && Math.abs(diff) < subtitleDiff) {
+        this.pauseAfterSubtitle(Core.timeDiff);
         return;
       }
 
-      if (diff > Core.timeDiff / 2 && diff < Core.timeDiff * 6) {
-        this.lastPauseTime = playerTime;
+      if (diff >= Core.timeDiff / 2 && diff < Core.timeDiff * 6) {
         this.playerInstance.pause();
+        this.lastPauseTime = this.playerInstance.getCurrentTime();
       }
     }, pauseTimer);
   }

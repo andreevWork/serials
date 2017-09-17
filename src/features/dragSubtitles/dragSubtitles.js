@@ -1,7 +1,10 @@
 import * as Dragula from 'dragula';
 import {radomizeArray} from "../../utils/radnomizeArray";
+import wordTemplate from './templates/word.handlebars';
+import blockTemplate from './templates/block.handlebars';
+import './dragSubtitles.css';
 
-class DragSubtitles  {
+export class DragSubtitles  {
   container;
   dragulaInstance;
   patternString;
@@ -15,34 +18,38 @@ class DragSubtitles  {
     const {text} = this.coreInstance.getCurrentSubtitle();
     const words = text.split(/\s+/g);
     this.patternString = words.join('');
-    const wordsEl = el.childNodes;
 
-    radomizeArray(words);
-
-    words.forEach(word => {
-      const div = document.createElement('span');
-      div.textContent = word;
-      div.classList.add('word');
-      el.appendChild(div);
+    this.container.innerHTML = blockTemplate({
+      content: radomizeArray(words)
+        .map(word => wordTemplate({word}))
+        .join('')
     });
 
-    this.dragulaInstance = Dragula([el], {
+    const wordsEl = document.querySelector('.js-words');
+    const wordsElChildNodes = wordsEl.childNodes;
+
+    this.dragulaInstance = Dragula([wordsEl], {
       direction: 'horizontal'
     });
 
     this.dragulaInstance.on('drop', () => {
-      const wordsElArray = Array.from(wordsEl);
-      const resultWords = wordsElArray.map(e => e.textContent).join('');
-
+      const wordsElArray = Array.from(wordsElChildNodes);
+      const resultWords = wordsElArray.map(e => e.textContent.trim()).join('');
+      console.log(resultWords);
+      console.log(this.patternString);
       if (resultWords === this.patternString) {
         setTimeout(() => {
-          wordsElArray.forEach(el => el.classList.add('hide'));
+          wordsEl.classList.add('hide');
           setTimeout(() => {
             this.destroy();
           }, 1500);
         })
       }
     });
+  }
+
+  initDrag() {
+
   }
 
   destroy() {
