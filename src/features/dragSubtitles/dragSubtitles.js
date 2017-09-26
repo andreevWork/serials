@@ -73,10 +73,7 @@ export class DragSubtitles  {
         .join('');
 
       if (resultWords === this.patternString) {
-        setTimeout(() => {
-
-          wordsEl.classList.add('hide');
-        });
+        this.container.classList.add('hide');
 
         setTimeout(() => {
           this.destroy();

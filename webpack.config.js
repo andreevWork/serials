@@ -12,7 +12,13 @@ module.exports = {
         filename: 'index.js'
     },
 
-    module: {
+    resolve: {
+      alias: {
+        utils: './src/utils'
+      }
+    },
+
+  module: {
       rules: [
         {
           test: /\.js$/,

@@ -28,6 +28,9 @@
       justify-content: center;
       height: 100px;
       touch-action: none;
+      will-change: opacity;
+      transition: opacity 1.5s;
+      opacity: 1;
     }
 
     .main {
@@ -44,22 +47,10 @@
 </head>
 <body>
 
-<header class="header">
-
-</header>
+<header class="header"></header>
 
 <div class="flex-center">
-  <main class="main">
-    <section>
-      <video id="player" controls>
-        <source src="rik_and_morty_1_1.mp4" type="video/mp4">
-      </video>
-    </section>
-
-    <section class="features" id="feature">
-
-    </section>
-  </main>
+  <main class="main" id="main"></main>
 </div>
 
 <script src="index.js"></script>

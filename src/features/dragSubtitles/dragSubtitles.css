@@ -1,9 +1,3 @@
-.words {
-  will-change: opacity;
-  transition: opacity 1.5s;
-  opacity: 1;
-}
-
 .word {
   cursor: pointer;
   margin: 0 6px;

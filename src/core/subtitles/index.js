@@ -1,25 +1,11 @@
-// @flow
+import {getRequest} from "utils/request";
+import {binarySearch} from "utils/binarySearch";
 
-import {getRequest} from "../utils/request";
-import {binarySearch} from "../utils/binarySearch";
+export class Subtitles {
 
-export type Subtitle = {
-  startTime: number;
-  endTime: number;
-  text: string;
-}
+  subtitles;
 
-export interface ISubtitles {
-  loadSubtitles(fileName: string): Promise<void>;
-  getIndexByTime(time: number): number;
-  getSubtitleByIndex(index: number): Subtitle;
-}
-
-export class Subtitles implements ISubtitles {
-
-  subtitles: Array<Subtitle>;
-
-  loadSubtitles(fileName: string): Promise<void> {
+  loadSubtitles(fileName) {
     return getRequest(fileName)
       .then(subtitlesParser)
       .then(subtitles => {
@@ -27,7 +13,7 @@ export class Subtitles implements ISubtitles {
       });
   }
 
-  getIndexByTime(time: number): number {
+  getIndexByTime(time) {
     return binarySearch(this.subtitles, time, (sub, time) => {
       return time < sub.startTime ?
         1
@@ -39,7 +25,7 @@ export class Subtitles implements ISubtitles {
     }, true);
   }
 
-  getSubtitleByIndex(index: number): Subtitle {
+  getSubtitleByIndex(index) {
     return this.subtitles[index];
   }
 }

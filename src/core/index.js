@@ -1,62 +1,49 @@
-// @flow
-
 import * as keycode from "keycode";
-import type {ISubtitles, Subtitle} from "../subtitles/index";
-import type {IPlayer} from "../player/index";
+import {Subtitles} from "./subtitles";
+import {Player} from "./player";
 
-export interface ICore {
-  startuem(): void;
-  findSubtitleIndex(): number;
-  getCurrentSubtitle(): Subtitle;
-  playSubtitle(): void;
-  repeatSubtitle(): void;
-  pauseAfterSubtitle(): void;
-}
-
-export class Core implements ICore {
+export class Core {
 
   static timeDiff = 70;
 
-  static repeatKeyCode = keycode('r');
+  playerInstance;
+  subtitlesInstance;
 
-  playerInstance: IPlayer;
-  subtitlesInstance: ISubtitles;
+  currentSubtitleIndex;
+  lastSubtitleIndex;
 
-  currentSubtitleIndex: number;
-  lastSubtitleIndex: number;
+  lastPauseTime;
+  pauseTimerId;
 
-  lastPauseTime: number;
-  pauseTimerId: number;
-
-  constructor(
-    playerInstance: IPlayer,
-    subtitlesInstance: ISubtitles
-  ) {
-    this.playerInstance = playerInstance;
-    this.subtitlesInstance = subtitlesInstance;
+  constructor() {
+    this.playerInstance = new Player();
+    this.subtitlesInstance = new Subtitles();
   }
 
-  startuem(): void {
-    document.addEventListener('keyup', ({ keyCode }: KeyboardEvent) => {
-      if (Core.repeatKeyCode === keyCode) {
-        const index = this.findSubtitleIndex();
-
-        if (index < 0) {
-          return;
-        }
-
-        this.lastPauseTime = -1;
-
-        this.currentSubtitleIndex = index;
-
-        this.repeatSubtitle();
-
-        this.lastSubtitleIndex = this.currentSubtitleIndex;
-      }
-    });
+  startuem() {
+    return Promise.all([
+      this.playerInstance.setup(),
+      this.subtitlesInstance.loadSubtitles()
+    ])
   }
 
-  findSubtitleIndex(): number {
+  doAction(action) {
+    const index = this.findSubtitleIndex();
+
+    if (index < 0) {
+      return;
+    }
+
+    this.lastPauseTime = -1;
+
+    this.currentSubtitleIndex = index;
+
+    action(this);
+
+    this.lastSubtitleIndex = this.currentSubtitleIndex;
+  }
+
+  findSubtitleIndex() {
     const playerTime = this.playerInstance.getCurrentTime();
 
     if (playerTime === this.lastPauseTime) {
@@ -66,16 +53,11 @@ export class Core implements ICore {
     }
   }
 
-  getCurrentSubtitle(): Subtitle {
+  getCurrentSubtitle() {
     return this.subtitlesInstance.getSubtitleByIndex(this.currentSubtitleIndex);
   }
 
-  repeatSubtitle(): void {
-    this.pauseAfterSubtitle();
-    this.playSubtitle();
-  }
-
-  playSubtitle(): void {
+  playSubtitle() {
     let {startTime} = this.getCurrentSubtitle();
 
     this.playerInstance.seek(startTime - Core.timeDiff);
@@ -85,7 +67,7 @@ export class Core implements ICore {
     }
   }
 
-  pauseAfterSubtitle(time:? number): void {
+  pauseAfterSubtitle(time) {
     clearTimeout(this.pauseTimerId);
 
     const {startTime, endTime} = this.getCurrentSubtitle();
@@ -108,3 +90,16 @@ export class Core implements ICore {
     }, pauseTimer);
   }
 }
+
+//
+
+// static repeatKeyCode = keycode('r');
+// repeatSubtitle() {
+//   this.pauseAfterSubtitle();
+// this.playSubtitle();
+// }
+// document.addEventListener('keyup', ({ keyCode }: KeyboardEvent) => {
+//   if (Core.repeatKeyCode === keyCode) {
+//
+//   }
+// });
